@@ -53,9 +53,9 @@ def get_llm_response(prompt):
 
 def get_llm_explanation(question, answer):
     prompt = f"""Explain the following Jeopardy question and answer. \n\nQuestion: {question}\nAnswer: {answer}\n\n 
-    
+
     The user would like to learn more about this topic. You do not need to rewrite the question and answer. 
-    
+
     Please write it across a few concise paragraphs."""
     return get_llm_response(prompt)
 
@@ -161,8 +161,17 @@ def generate_questions():
 
     current_date = start_date
     current_question_number = start_question_number
+    questions_added = 0
 
-    for _ in range(QUESTIONS_TO_ADD):
+    # Fetch all needed questions at once
+    conn = sqlite3.connect('jeopardy.db')
+    c = conn.cursor()
+    c.execute("SELECT * FROM questions ORDER BY RANDOM() LIMIT ?", (QUESTIONS_TO_ADD,))
+    random_questions = c.fetchall()
+    conn.close()
+
+    questions_to_add = []
+    for question in random_questions:
         formatted_date = current_date.strftime("%Y-%m-%d")
         current_question_number += 1
 
@@ -172,14 +181,13 @@ def generate_questions():
             current_question_number = 1
 
         try:
-            question = get_random_question()
             cleaned_question = clean_text(question[5])
             cleaned_answer = clean_text(question[6])
             explanation = get_llm_explanation(cleaned_question, cleaned_answer)
             possible_answers = get_possible_answers(question, cleaned_answer)
 
             question_data = {
-                "id": len(existing_questions),
+                "id": len(existing_questions) + questions_added,
                 "date": formatted_date,
                 "question_number": current_question_number,
                 "category": clean_text(question[3]),
@@ -190,20 +198,19 @@ def generate_questions():
                 "explanation": clean_text(explanation)
             }
 
-            existing_questions.append(question_data)
-            save_questions(existing_questions)
-
-            print(
-                f"Generated question for {formatted_date}, question number {current_question_number}"
-            )
+            questions_to_add.append(question_data)
+            print(f"Processed question for {formatted_date}, question number {current_question_number}")
+            questions_added += 1
 
         except Exception as e:
-            print(f"Error generating question: {str(e)}")
+            print(f"Error processing question: {str(e)}")
             continue
 
-    print(
-        f"Added {QUESTIONS_TO_ADD} new questions. Total questions: {len(existing_questions)}"
-    )
+    # Save all questions at once
+    if questions_to_add:
+        existing_questions.extend(questions_to_add)
+        save_questions(existing_questions)
+        print(f"Added {len(questions_to_add)} new questions. Total questions: {len(existing_questions)}")
 
 
 if __name__ == "__main__":
