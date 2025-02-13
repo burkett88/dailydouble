@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeopardy Question (Updated Every 8 Hours)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0066cc;
+            --secondary-color: #f0f0f0;
+            --text-color: #333;
+            --light-text-color: #666;
+            --button-hover-color: #0052a3;
+            --disabled-color: #cccccc;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            margin: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+        .info {
+            font-size: 0.9rem;
+            color: var(--light-text-color);
+            margin-bottom: 1rem;
+        }
+        .category-value {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            padding: 10px;
+            background-color: var(--secondary-color);
+            border-radius: 8px;
+        }
+        .question, .answer, .explanation {
+            margin-bottom: 1.5rem;
+        }
+        .label {
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+        }
+        .content {
+            font-weight: 400;
+            font-size: 1.2rem;
+            margin-top: 0.5rem;
+        }
+        #guess-input {
+            padding: 10px 15px;
+            font-size: 1rem;
+            width: 80%;
+            max-width: 400px;
+            margin-bottom: 1rem;
+            border: 2px solid var(--primary-color);
+            border-radius: 5px;
+        }
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+            font-weight: 600;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background-color: var(--button-hover-color);
+        }
+        button:disabled {
+            background-color: var(--disabled-color);
+            cursor: not-allowed;
+        }
+        .hidden {
+            display: none;
+        }
+
+        #explanation {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: left;
+            font-size: 0.9em;
+        }
+
+        #explanation h1 {
+            font-size: 1.2em;
+        }
+
+        #explanation h2 {
+            font-size: 1.1em;
+        }
+
+        #explanation h3 {
+            font-size: 1em;
+        }
+        
+        #stats {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-top: 20px;
+            color: var(--primary-color);
+        }
+        #guess-feedback {
+            margin-top: 10px;
+            font-weight: 600;
+        }
+        .correct { color: green; }
+        .incorrect { color: red; }
+        #previous-questions {
+            margin-top: 30px;
+        }
+        #previous-questions h2 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        #previous-links {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        .question-link {
+            background-color: var(--secondary-color);
+            padding: 8px 12px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .question-link:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .question-link.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Jeopardy Question</h1>
+        <div id="question-container">
+            <p class="info">Question Date: <span id="lastUpdated"></span></p>
+            <p class="info">Next Update In: <span id="nextUpdate"></span></p>
+            <p class="category-value">
+                Category: <span id="category"></span> | Value: $<span id="value"></span>
+            </p>
+            <div class="question">
+                <p class="label">Question:</p>
+                <p id="question" class="content"></p>
+            </div>
+            <div id="guess-container">
+                <input type="text" id="guess-input" placeholder="Enter your answer">
+                <button onclick="checkGuess()">Submit Guess</button>
+                <p id="guess-feedback"></p>
+            </div>
+            <button onclick="showAnswer()">Reveal Answer</button>
+            <div id="answer-container" class="hidden">
+                <div class="answer">
+                    <p class="label">Answer:</p>
+                    <p id="answer" class="content"></p>
+                </div>
+                <div class="explanation">
+                    <p class="label">Explanation:</p>
+                    <p id="explanation" class="content"></p>
+                </div>
+            </div>
+            <div id="stats"></div>
+        </div>
+        <div id="previous-questions">
+            <h2>Previous Questions</h2>
+            <div id="previous-links"></div>
+        </div>
+    </div>
+
+<script>
+const HOURS_INTERVAL = 8;
+const MS_PER_HOUR = 3600000;
+
+let currentAnswer = '';
+let allQuestions = [];
+let currentQuestionIndex = 0;
+let currentDate = new Date();
+
+function setCookie(name, value, days) {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = name + '=' + encodeURIComponent(value) + '; expires=' + expires + '; path=/';
+}
+
+function getCookie(name) {
+    return document.cookie.split('; ').reduce((r, v) => {
+        const parts = v.split('=');
+        return parts[0] === name ? decodeURIComponent(parts[1]) : r;
+    }, '');
+}
+
+function updateStats(isCorrect) {
+    let stats = JSON.parse(getCookie('jeopardyStats') || '{"total":0,"correct":0}');
+    
+    stats.total++;
+    if (isCorrect) stats.correct++;
+    
+    setCookie('jeopardyStats', JSON.stringify(stats), 365);
+    
+    displayStats();
+}
+
+function displayStats() {
+    const stats = JSON.parse(getCookie('jeopardyStats') || '{"total":0,"correct":0}');
+    const percentage = stats.total === 0 ? 0 : (stats.correct / stats.total * 100).toFixed(1);
+    
+    document.getElementById('stats').textContent = `Your Stats: ${stats.correct}/${stats.total} (${percentage}%) Correct`;
+}
+
+function getQuestionIndex() {
+    const currentDate = new Date();
+    const today = currentDate.toLocaleDateString('en-CA');
+    
+    const todaysQuestions = allQuestions.filter(q => q.date === today);
+        
+    if (todaysQuestions.length > 0) {
+        const currentHour = currentDate.getHours();
+        const periodOfDay = Math.floor(currentHour / HOURS_INTERVAL);
+        const questionIndex = Math.min(periodOfDay, todaysQuestions.length - 1);
+        return allQuestions.indexOf(todaysQuestions[questionIndex]);
+    }
+    
+    const latestQuestion = allQuestions.reduce((latest, current) => {
+        return new Date(current.date) <= currentDate && (!latest || new Date(current.date) > new Date(latest.date)) ? current : latest;
+    }, null);
+    return latestQuestion ? allQuestions.indexOf(latestQuestion) : -1;
+}
+
+function getTimeUntilNextUpdate() {
+    const now = currentDate;
+    const nextUpdate = new Date(now);
+    nextUpdate.setHours(Math.ceil(now.getHours() / HOURS_INTERVAL) * HOURS_INTERVAL, 0, 0, 0);
+    if (nextUpdate <= now) {
+        nextUpdate.setTime(nextUpdate.getTime() + MS_PER_HOUR * HOURS_INTERVAL);
+    }
+    return nextUpdate - now;
+}
+
+function formatTimeRemaining(ms) {
+    const hours = Math.floor(ms / MS_PER_HOUR);
+    const minutes = Math.floor((ms % MS_PER_HOUR) / 60000);
+    const seconds = Math.floor((ms % 60000) / 1000);
+    return `${hours}h ${minutes}m ${seconds}s`;
+}
+
+function updateNextUpdateTime() {
+    const timeRemaining = getTimeUntilNextUpdate();
+    document.getElementById('nextUpdate').textContent = formatTimeRemaining(timeRemaining);
+}
+
+function checkGuess() {
+    const guessInput = document.getElementById('guess-input');
+    const feedback = document.getElementById('guess-feedback');
+    const userGuess = guessInput.value.trim().toLowerCase();
+    const possibleAnswers = allQuestions[currentQuestionIndex].possible_answers.map(answer => answer.toLowerCase());
+
+    let guesses = JSON.parse(getCookie('jeopardyGuesses') || '{}');
+    if (guesses[currentQuestionIndex]) {
+        return; // User has already guessed for this question
+    }
+
+    guesses[currentQuestionIndex] = userGuess;
+    setCookie('jeopardyGuesses', JSON.stringify(guesses), 365);
+
+    if (possibleAnswers.includes(userGuess)) {
+        feedback.textContent = "Correct! Great job!";
+        feedback.className = "correct";
+        updateStats(true);
+    } else {
+        feedback.textContent = "Sorry, that's not correct. The correct answer is shown below.";
+        feedback.className = "incorrect";
+        updateStats(false);
+        showAnswer();
+    }
+
+    guessInput.disabled = true;
+    document.querySelector('#guess-container button').disabled = true;
+    updatePreviousLinks();
+}
+
+function showAnswer() {
+    document.getElementById('answer-container').classList.remove('hidden');
+    document.getElementById('guess-input').disabled = true;
+    document.querySelector('#guess-container button').disabled = true;
+}
+
+function updatePreviousLinks() {
+    const linksContainer = document.getElementById('previous-links');
+    linksContainer.innerHTML = '';
+
+    const currentIndex = getQuestionIndex();
+    if (currentIndex === -1) return;
+
+    const questionsByDate = {};
+    const guesses = JSON.parse(getCookie('jeopardyGuesses') || '{}');
+
+    for (let i = currentIndex; i >= 0; i--) {
+        const question = allQuestions[i];
+        const date = question.date;
+
+        if (!questionsByDate[date]) {
+            questionsByDate[date] = [];
+        }
+
+        const isCorrect = guesses[i] && question.possible_answers.map(a => a.toLowerCase()).includes(guesses[i]);
+        
+        questionsByDate[date].push({
+            index: i,
+            question: question,
+            isCorrect: isCorrect,
+            hasGuessed: guesses.hasOwnProperty(i)
+        });
+    }
+
+    for (const date in questionsByDate) {
+        questionsByDate[date].forEach((entry) => {
+            const { index, question, isCorrect, hasGuessed } = entry;
+
+            const link = document.createElement('a');
+            link.href = '#';
+            link.className = 'question-link';
+            link.dataset.index = index;
+            link.textContent = `${question.date} Q${question.question_number}`;
+
+            if (hasGuessed) {
+                link.textContent += isCorrect ? ' ✓' : ' ✗';
+            }
+
+            if (index === currentQuestionIndex) {
+                link.classList.add('active');
+            }
+
+            link.onclick = (e) => {
+                e.preventDefault();
+                loadQuestion(index);
+            };
+
+            linksContainer.appendChild(link);
+        });
+    }
+}
+
+function loadQuestion(index) {
+    currentQuestionIndex = index;
+    const question = allQuestions[index];
+
+    document.getElementById('lastUpdated').textContent = `${question.date}, Question ${question.question_number}`;
+
+    const timeUntilNext = getTimeUntilNextUpdate();
+    document.getElementById('nextUpdate').textContent = formatTimeRemaining(timeUntilNext);
+
+    document.getElementById('category').textContent = question.category;
+    document.getElementById('value').textContent = question.value;
+    document.getElementById('question').textContent = question.question;
+    document.getElementById('answer').textContent = question.answer;
+    document.getElementById('explanation').textContent = question.explanation;
+
+    currentAnswer = question.answer;
+    
+    const guesses = JSON.parse(getCookie('jeopardyGuesses') || '{}');
+    if (guesses.hasOwnProperty(index)) {
+        const previousGuess = guesses[index];
+        document.getElementById('guess-input').value = previousGuess;
+        document.getElementById('guess-input').disabled = true;
+        document.querySelector('#guess-container button').disabled = true;
+        
+        const feedback = document.getElementById('guess-feedback');
+        if (question.possible_answers.map(a => a.toLowerCase()).includes(previousGuess.toLowerCase())) {
+            feedback.textContent = "Correct! Great job!";
+            feedback.className = "correct";
+        } else {
+            feedback.textContent = "Sorry, that's not correct. The correct answer is shown below.";
+            feedback.className = "incorrect";
+        }
+        
+        showAnswer();
+    } else {
+        document.getElementById('guess-input').value = '';
+        document.getElementById('guess-input').disabled = false;
+        document.querySelector('#guess-container button').disabled = false;
+        document.getElementById('answer-container').classList.add('hidden');
+        document.getElementById('guess-feedback').textContent = '';
+    }
+
+    displayStats();
+    updatePreviousLinks();
+}
+
+function loadQuestions() {
+    fetch('questions.json')
+        .then(response => response.json())
+        .then(data => {
+            allQuestions = data;
+            currentDate = new Date();
+            currentQuestionIndex = getQuestionIndex();
+            loadQuestion(currentQuestionIndex);
+        })
+        .catch(error => {
+            console.error('Error loading questions:', error);
+        });
+}
+
+loadQuestions();
+setInterval(updateNextUpdateTime, 1000);
+setInterval(() => {
+    currentDate = new Date();
+    const newIndex = getQuestionIndex();
+    if (newIndex !== currentQuestionIndex) {
+        currentQuestionIndex = newIndex;
+        loadQuestion(currentQuestionIndex);
+    } else {
+        updateNextUpdateTime();
+    }
+}, 60000);
+
+document.getElementById('guess-input').addEventListener('keyup', function(event) {
+    if (event.key === 'Enter') {
+        checkGuess();
+    }
+});
+</script>

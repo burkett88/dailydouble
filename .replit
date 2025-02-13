@@ -1,0 +1,30 @@
+entrypoint = "main.py"
+modules = ["python-3.10"]
+
+run = "cd public && python -m http.server 8000"
+language = "html"
+
+[nix]
+channel = "stable-23_05"
+
+[unitTest]
+language = "python3"
+
+[gitHubImport]
+requiredFiles = [".replit", "replit.nix"]
+
+[deployment]
+deploymentTarget = "static"
+publicDir = "public/"
+
+[[ports]]
+localPort = 8000
+externalPort = 8000
+
+[[ports]]
+localPort = 8080
+externalPort = 8080
+
+[[ports]]
+localPort = 8501
+externalPort = 80
