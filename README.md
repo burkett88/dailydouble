@@ -15,7 +15,7 @@ A web application that displays Jeopardy questions that update every 8 hours. Us
 ## Setup
 
 1. Clone this repository
-2. Add your OpenAI API key to your environment variables
+2. Add your OpenAI API key to your environment variables (optional)
 3. Add your OpenRouter API key to your environment variables
 4. Run `python generate_daily_question.py` to generate initial questions
 5. Start the server with `cd public && python -m http.server 8000`
@@ -24,8 +24,8 @@ A web application that displays Jeopardy questions that update every 8 hours. Us
 
 - `public/index.html`: Frontend interface
 - `public/questions.json`: Generated questions database
-- `app.py`: Streamlit interface (alternative to the html frontend)
-- `generate_daily_question.py`: Question generation script
+- `streamlit_version/app.py`: Streamlit interface (alternative to the html frontend)
+- `generate_daily_questions.py`: Question generation script
 - `jeopardy.db`: SQLite database containing Jeopardy questions
 
 ## Technologies Used
