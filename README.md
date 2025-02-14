@@ -14,11 +14,11 @@ A web application that displays Jeopardy questions that update every 8 hours. Us
 
 ## Setup
 
-1. Clone this Repl
-2. Add your OpenAI API key to the Secrets tool (Environment variables)
-3. Add your OpenRouter API key to the Secrets tool
+1. Clone this repository
+2. Add your OpenAI API key to your environment variables
+3. Add your OpenRouter API key to your environment variables
 4. Run `python generate_daily_question.py` to generate initial questions
-5. Click the Run button to start the server
+5. Start the server with `cd public && python -m http.server 8000`
 
 ## Project Structure
 
