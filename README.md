@@ -3,6 +3,8 @@
 
 A web application that displays Jeopardy questions that update every 8 hours. Users can test their knowledge by attempting to answer questions and track their performance over time.
 
+See a live version at https://daily-double.replit.app/
+
 ## Features
 
 - Questions update every 8 hours
