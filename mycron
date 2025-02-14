@@ -1,1 +1,0 @@
-0 0 * * * python ~/generate_daily_question.py

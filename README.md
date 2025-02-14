@@ -24,7 +24,7 @@ A web application that displays Jeopardy questions that update every 8 hours. Us
 
 - `public/index.html`: Frontend interface
 - `public/questions.json`: Generated questions database
-- `app.py`: Streamlit admin interface
+- `app.py`: Streamlit interface (alternative to the html frontend)
 - `generate_daily_question.py`: Question generation script
 - `jeopardy.db`: SQLite database containing Jeopardy questions
 
